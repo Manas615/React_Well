@@ -1,0 +1,52 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #de770f; /* fallback color */
+    background-image: url('SpringBG.jpeg'); /* Path to your background image */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the image */
+    background-attachment: fixed; /* Keeps the background fixed during scroll */
+  }  
+  
+  #game-container {
+    text-align: center;
+    background-image: url('SpringBG.jpeg'); /* Path to your background image */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the image */
+    padding: 20px; /* Optional, to ensure the content is not too close to the edges */
+    border-radius: 10px; /* Optional, for rounded corners */
+  }  
+  
+  .memory-game {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-gap: 10px;
+    margin: 20px auto;
+  }
+  
+  .memory-card {
+    width: 100px;
+    height: 100px;
+    background-color: #2e8b57;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    color: white;
+  }
+  
+  .memory-card.flip {
+    background-color: white;
+    color: #2e8b57;
+  }
+  

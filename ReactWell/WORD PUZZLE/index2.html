@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Association Game</title>
+  <style>
+    /* Style to make canvas full screen */
+    body, html {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #startButton {
+      display: block;
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #wordCanvas {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+
+<button id="startButton">Start Game</button>
+<canvas id="wordCanvas"></canvas>
+
+<script src="../js/scoreTracker.js"></script>
+<script>
+const canvas2 = document.getElementById("wordCanvas");
+const ctx2 = canvas2.getContext("2d");
+canvas2.width = window.innerWidth;
+canvas2.height = window.innerHeight;
+
+// Background image for the canvas
+const background = new Image();
+background.src = "background3.avif"; // Replace with the path to your background image
+
+// Define objects with image paths instead of colors
+let objects = [
+  { name: "", word: "Water", imageSrc: "water.avif" },
+  { name: "", word: "Sun", imageSrc: "sun2.avif" },
+  { name: "", word: "Tree", imageSrc: "tree.avif" },
+  { name: "", word: "Flower", imageSrc: "flower.avif" },
+  { name: "", word: "Rain", imageSrc: "rain.avif" },
+  { name: "", word: "Garden", imageSrc: "garden2.avif" },
+  { name: "", word: "Bird", imageSrc: "bird.avif" },
+  { name: "", word: "Butterfly", imageSrc: "butterfly.avif" },
+  { name: "", word: "Bees", imageSrc: "bee.avif" },
+  { name: "", word: "Fountain", imageSrc: "fountain.avif" }
+];
+
+// Initialize variables
+let currentWord;
+let score2 = 0;
+let gameActive2 = true;
+
+// Load images for each object
+function loadImages() {
+  objects.forEach(obj => {
+    obj.image = new Image();
+    obj.image.src = obj.imageSrc;
+  });
+}
+
+// Draw the objects on the canvas
+function drawObjects() {
+  ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+
+  // Draw the background image
+  if (background.complete) {
+    ctx2.drawImage(background, 0, 0, canvas2.width, canvas2.height);
+  }
+
+  // Draw score and prompt text
+  ctx2.font = "24px Arial";
+  ctx2.fillStyle = "grey";
+  ctx2.fillText(`Score: ${score2}`, 10, 30);
+
+  if (gameActive2) {
+    ctx2.fillText(`Match the word: ${currentWord}`, canvas2.width / 2 - 100, 50);
+
+    // Calculate grid layout for centered positioning
+    const columns = 5; // Number of images per row
+    const padding = 20; // Space between images
+    const imageSize = 80; // Image width and height
+    const totalWidth = columns * imageSize + (columns - 1) * padding;
+    let startX = (canvas2.width - totalWidth) / 2;
+    let startY = 150;
+
+    // Draw each object in grid layout with label
+    objects.forEach((obj, index) => {
+      const x = startX + (index % columns) * (imageSize + padding);
+      const y = startY + Math.floor(index / columns) * (imageSize + padding);
+
+      // Draw image and label
+      if (obj.image.complete) {
+        ctx2.drawImage(obj.image, x, y, imageSize, imageSize);
+      }
+      ctx2.fillStyle = "black";
+      ctx2.fillText(obj.name, x + 10, y + imageSize + 20);
+      
+      // Update object position properties
+      obj.x = x;
+      obj.y = y;
+      obj.width = imageSize;
+      obj.height = imageSize;
+    });
+  } else {
+    ctx2.fillText("Game Over!", canvas2.width / 2 - 60, canvas2.height / 2 - 20);
+    ctx2.fillText(`Final Score: ${score2}`, canvas2.width / 2 - 80, canvas2.height / 2 + 20);
+  }
+}
+
+// Generate a random word to match
+function generateWord() {
+  const randomObject = objects[Math.floor(Math.random() * objects.length)];
+  return randomObject.word;
+}
+
+let wordCount = 0; // Track number of words completed
+
+// Start the game
+function startWordGame() {
+  document.getElementById("startButton").style.display = "none";
+  canvas2.style.display = "block";
+  score2 = 0;
+  wordCount = 0; // Reset word count at the start
+  gameActive2 = true;
+  currentWord = generateWord();
+  drawObjects();
+}
+
+// Function to analyze and display final results
+function displayResults() {
+  let accuracyRate = (score2 / objects.length) * 100;
+  let message = `<strong>Game Over!</strong><br>`;
+  message += `Final Score: <b>${score2}</b><br>`;
+  message += `Accuracy Rate: <b>${accuracyRate.toFixed(2)}%</b><br><br>`;
+
+  // Save the score before displaying results
+  ScoreTracker.saveWordScore(score2);
+
+  if (accuracyRate > 90) {
+    message += "<b>Excellent!</b> Strong cognitive function and memory recall.";
+  } else if (accuracyRate > 60) {
+    message += "<b>Possible Mild Cognitive Impairment (MCI)</b><br>early signs of memory or processing decline.";
+  } else if (accuracyRate > 30) {
+    message += "<b>Possible Alzheimer's, Dementia, or Aphasia.</b><br>May indicate difficulty in word recall, association, or understanding.";
+  } else {
+    message += "<b>High likelihood of serious cognitive disorders</b><br>(advanced dementia, stroke-related cognitive damage, severe memory loss, or neurological disorders).";
+  }
+
+  let resultsBox = document.getElementById("resultsBox");
+  resultsBox.innerHTML = message;
+  resultsBox.style.display = "block"; // Show results box
+  document.getElementById("startButton").style.display = "block"; // Show start button for new game
+}
+
+// Check if the selected object matches the word
+function checkSelection(x, y) {
+  if (!gameActive2) return;
+
+  const selectedObject = objects.find(
+    obj => x > obj.x && x < obj.x + obj.width && y > obj.y && y < obj.y + obj.height
+  );
+
+  if (selectedObject && selectedObject.word === currentWord) {
+    score2 += 1;
+    wordCount++; // Increment word count
+
+    if (wordCount >= 10) { // Game ends after 10 words
+      gameActive2 = false;
+      displayResults(); // This will now save the score and show results
+    } else {
+      currentWord = generateWord();
+      drawObjects();
+    }
+  } else if (selectedObject) {
+    gameActive2 = false;
+    displayResults(); // This will now save the score and show results
+  }
+}
+
+// Event listener for mouse clicks on canvas
+canvas2.addEventListener("click", (event) => {
+  const rect = canvas2.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  checkSelection(x, y);
+});
+
+// Load images and add event listener to start button
+loadImages();
+background.onload = drawObjects;
+document.getElementById("startButton").addEventListener("click", startWordGame);
+
+// Add this at the beginning of your script
+ScoreTracker.requireLogin();
+
+// Add this where you handle game completion
+function handleGameCompletion(score) {
+    ScoreTracker.saveWordScore(score);
+}
+</script>
+
+<!-- Results Box -->
+<div id="resultsBox" class="hidden"></div>
+
+<style>
+  #resultsBox {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    background: white;
+    padding: 20px;
+    border: 2px solid black;
+    font-size: 18px;
+    text-align: center;
+    display: none; /* Hidden by default */
+  }
+</style>
+
+
+</body>
+</html>

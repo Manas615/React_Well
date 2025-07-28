@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whack-a-Mole Style Game</title>
+  <style>
+    /* Full screen canvas */
+    #whackCanvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    /* Centered start button */
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 15px 30px;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* Hide start button during game */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<button id="startButton">Start Game</button>
+<canvas id="whackCanvas"></canvas>
+
+<script src="../../js/scoreTracker.js"></script>
+<script>
+const canvas = document.getElementById("whackCanvas");
+const ctx = canvas.getContext("2d");
+
+// Resize canvas to full screen
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Load background image
+const backgroundImage = new Image();
+backgroundImage.src = "backgroundmole.avif"; // Replace with the path to your background image
+
+// Load flower image for the "mole"
+const flowerImage = new Image();
+flowerImage.src = "mole.png"; // Replace with the path to your flower or mole image
+
+let flowers = [];
+let score = 0;
+let gameInterval, flowerInterval;
+
+// Function to spawn a new flower at a random location
+function spawnFlower() {
+  const flower = {
+    x: Math.random() * (canvas.width - 40),
+    y: Math.random() * (canvas.height - 40),
+    size: 60,
+    timeout: Date.now() + 2000 // Each flower lasts 2 seconds
+  };
+  flowers.push(flower);
+}
+
+// Function to draw background and flowers
+function drawFlowers() {
+  // Draw the background image
+  if (backgroundImage.complete) {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Display the score
+  ctx.font = "20px Arial";
+  ctx.fillStyle = "black";
+  ctx.fillText("Score: " + score, 10, 30);
+
+  // Remove expired flowers and draw each flower
+  const now = Date.now();
+  flowers = flowers.filter(flower => now < flower.timeout);
+
+  flowers.forEach(flower => {
+    if (flowerImage.complete) {
+      ctx.drawImage(flowerImage, flower.x - flower.size / 2, flower.y - flower.size / 2, flower.size, flower.size);
+    }
+  });
+}
+
+// Function to check if a flower was hit
+let totalClicks = 0;
+let missedClicks = 0;
+let reactionTimes = [];
+
+function checkHit(x, y) {
+  totalClicks++; // Count every click
+  let hit = false;
+  let now = Date.now();
+
+  flowers.forEach((flower, index) => {
+    const distance = Math.sqrt((x - flower.x) ** 2 + (y - flower.y) ** 2);
+    if (distance < flower.size / 2) {
+      let reactionTime = now - (flower.timeout - 2000); // Calculate reaction time
+      reactionTimes.push(reactionTime);
+      flowers.splice(index, 1);
+      score++;
+      hit = true;
+    }
+  });
+
+  if (!hit) {
+    missedClicks++; // Count missed clicks
+  }
+}
+
+
+// Add click event listener for hitting flowers
+canvas.addEventListener("click", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  checkHit(x, y);
+});
+
+// Function to start the game
+function startWhackGame() {
+  score = 0;
+  flowers = [];
+  document.getElementById("startButton").classList.add("hidden"); // Hide the button
+  gameInterval = setInterval(drawFlowers, 100);
+  flowerInterval = setInterval(spawnFlower, 1000);
+  setTimeout(stopWhackGame, 30000); // Game lasts 30 seconds
+}
+
+// Function to stop the game after 30 seconds
+function stopWhackGame() {
+  clearInterval(gameInterval);
+  clearInterval(flowerInterval);
+
+  let avgReactionTime = reactionTimes.length ? 
+                        reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length : 
+                        0;
+  let accuracyRate = totalClicks > 0 ? (score / totalClicks) * 100 : 0;
+
+  // Save the score
+  ScoreTracker.saveWhackScore(score, avgReactionTime, accuracyRate);
+
+  let message = `<strong>Game Over!</strong><br>`;
+  message += `Final Score: <b>${score}</b><br>`;
+  message += `Average Reaction Time: <b>${avgReactionTime.toFixed(2)} ms</b><br>`;
+  message += `Accuracy Rate: <b>${accuracyRate.toFixed(2)}%</b><br>`;
+  message += `Missed Clicks: <b>${missedClicks}</b><br><br>`;
+
+  if (avgReactionTime < 500 && accuracyRate > 80) {
+    message += "<b>Great job!</b> Your reaction speed and accuracy are excellent.";
+  } else if (avgReactionTime < 1000 && accuracyRate > 60) {
+    message += "<b>Good performance!</b> But your reaction time could be improved.";
+  } else if (avgReactionTime > 1000 || accuracyRate < 50) {
+    message += "<b>Warning:</b> Your reaction time and accuracy suggest possible motor or cognitive impairments. Consider consulting a specialist.";
+  }
+
+  // Display results in the results box
+  let resultsBox = document.getElementById("resultsBox");
+  resultsBox.innerHTML = message;
+  resultsBox.style.display = "block"; // Show results box
+  document.getElementById("startButton").classList.remove("hidden");
+}
+
+
+
+// Add event listener to start button
+document.getElementById("startButton").addEventListener("click", () => {
+  startWhackGame();
+});
+</script>
+
+<!-- Results Box -->
+<div id="resultsBox" class="hidden"></div>
+
+<style>
+  #resultsBox {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    background: white;
+    padding: 20px;
+    border: 2px solid black;
+    font-size: 18px;
+    text-align: center;
+    display: none; /* Hidden by default */
+  }
+</style>
+
+
+</body>
+</html>

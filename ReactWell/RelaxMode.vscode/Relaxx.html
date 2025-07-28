@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guided Relaxation Mode</title>
+    <style>
+        /* Basic style for the map */
+        #map {
+            width: 99vw;
+            height: 99vh;
+            background-image: url('BotanistOrangerie.jpeg'); /* Replace with your map image path */
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .plant-button {
+            position: absolute;
+            width: 125px;
+            height: 125px;
+            background-size: cover;
+            cursor: pointer;
+            border: 2px solid #11ff01;
+            border-radius: 8px;
+            background-color: transparent;
+        }
+        #random-image-button {
+            position: absolute;
+            bottom: 41%;
+            right: 74%;
+            width: 125px;
+            height: 125px;
+            background-size: cover;
+            cursor: pointer;
+            border: 3px solid #ff8c00;
+            border-radius: 12px;
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map">
+    <!-- Plant buttons on four points on the map -->
+    <button class="plant-button" id="plant1" style="top: 12%; left: 36%;"></button>
+    <button class="plant-button" id="plant2" style="top: 12%; right: 27%;"></button>
+    <button class="plant-button" id="plant3" style="bottom: 10%; left: 36%;"></button>
+    <button class="plant-button" id="plant4" style="bottom: 10%; right: 27%;"></button>
+    
+    <!-- Random image button -->
+    <button id="random-image-button"></button>
+</div>
+
+<button id="start-relax-mode">Start Relax Mode</button>
+<audio id="background-music" loop>
+    <source src="inspirational-nature-230319.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    /* Background music
+    const backgroundMusic = document.getElementById('background-music');
+    backgroundMusic.volume = 0.5; // Adjust volume if needed
+    backgroundMusic.play();
+    */
+
+    document.getElementById('start-relax-mode').addEventListener('click', () => {
+    const backgroundMusic = document.getElementById('background-music');
+    backgroundMusic.volume = 0.5; // Adjust volume if needed
+    backgroundMusic.play().catch(error => {
+        console.log("Audio playback failed:", error);
+    });
+    document.getElementById('start-relax-mode').style.display = 'none';
+});
+
+
+    // Plant buttons cycling through images
+    const plantImages = [
+        ['p1i1.JPG', 'p1i2.JPG', 'p1i3.JPG', 'p1i4.JPG'],
+        ['p2i1.JPG', 'p2i2.JPG', 'p2i3.JPG', 'p2i4.JPG'],
+        ['p3i1.JPG', 'p3i2.JPG', 'p3i3.JPG', 'p3i4.JPG'],
+        ['p4i1.JPG', 'p4i2.JPG', 'p4i3.JPG', 'p4i4.JPG']
+    ];
+
+    const plantButtons = [
+        document.getElementById('plant1'),
+        document.getElementById('plant2'),
+        document.getElementById('plant3'),
+        document.getElementById('plant4')
+    ];
+
+    let plantIndices = [0, 0, 0, 0];
+
+    plantButtons.forEach((button, index) => {
+        button.style.backgroundImage = `url(${plantImages[index][0]})`;
+        button.addEventListener('click', () => {
+            plantIndices[index] = (plantIndices[index] + 1) % plantImages[index].length;
+            button.style.backgroundImage = `url(${plantImages[index][plantIndices[index]]})`;
+        });
+    });
+
+    // Random image button cycling through 9 images
+    const randomImages = [
+        'Rando1.JPG', 'Rando4.JPG', 'Rando7.JPG',
+        'Rando2.JPG', 'Rando5.JPG', 'Rando8.JPG',
+        'Rando3.JPG', 'Rando6.JPG', 'Rando9.JPG'
+    ];
+    const randomButton = document.getElementById('random-image-button');
+
+    function setRandomImage() {
+        const randomIndex = Math.floor(Math.random() * randomImages.length);
+        randomButton.style.backgroundImage = `url(${randomImages[randomIndex]})`;
+    }
+
+    // Initial random image
+    setRandomImage();
+    
+    // Change to a new random image on click
+    randomButton.addEventListener('click', setRandomImage);
+</script>
+
+</body>
+</html>

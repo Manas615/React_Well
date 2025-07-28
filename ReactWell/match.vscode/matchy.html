@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Pairs Game</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #de770f; /* fallback color */
+    background-image: url('SpringBG.jpeg'); /* Path to your background image */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the image */
+    background-attachment: fixed; /* Keeps the background fixed during scroll */
+  }  
+  
+  #game-container {
+    text-align: center;
+    background-image: url('SpringBG.jpeg'); 
+    background-size: cover; 
+    background-position: center; 
+    padding: 20px; 
+    border-radius: 10px; 
+  }  
+  
+  .memory-game {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-gap: 10px;
+    margin: 20px auto;
+  }
+  
+  .memory-card {
+    width: 100px;
+    height: 100px;
+    background-color: #2e8b57;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    color: white;
+  }
+  
+  .memory-card.flip {
+    background-color: white;
+    color: #2e8b57;
+  }
+  
+</style>
+</head>
+<body>
+  <center>
+  <div id="game-container">
+    <h1>Memory Pairs</h1>
+    <p id="status">Try to find all pairs!</p>
+    <div id="memory-game" class="memory-game"></div>
+    <button onclick="startGame()">Start New Game</button>
+  </div>
+  <script src="../js/scoreTracker.js"></script>
+  <script src="script.js"></script>
+  <script>
+    ScoreTracker.requireLogin();
+    startGame();
+
+    function handleGameCompletion(moves) {
+        ScoreTracker.saveMemoryScore(moves);
+    }
+  </script>
+  </center>
+</body>
+</html>
